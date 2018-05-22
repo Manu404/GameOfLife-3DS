@@ -4,11 +4,14 @@
 #include <string.h>
 #include <list>
 #include <math.h>
+#include <unistd.h>
 
-#define IMAGE_SIZE 400*240 // 96000
+#define WIDTH 400
+#define HEIGTH 240
+#define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
 
-u8 brew2_bgr[IMAGE_SIZE * 3]; // RGB RGB RGB RGB ... so times truie as french says
-u32 brew2_bgr_size = IMAGE_SIZE * 3; 
+u8 brew2_bgr[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times truie as french says
+u32 brew2_bgr_size = PIXELBUFFER_SIZE * 3; 
 
 class Vector2 // 2D Vector
 {
@@ -70,7 +73,8 @@ public:
 class World
 {
     Vector2* size;
-    Cell* cells[400][400];
+    Thread computeThread[WIDTH];
+    Cell* cells[WIDTH][HEIGTH];
 public:
     World(Vector2* size)
     {
@@ -128,19 +132,19 @@ public:
 
     void Compute()
     {
+
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
             {
                 cells[x][y]->ComputeState();
             }
+
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
             {
                 cells[x][y]->ApplyNewState();
             }
     }
-
-
 
     void Print()
     {
@@ -150,9 +154,9 @@ public:
                 int color = cells[x][y]->IsAlive ? 255 : 0;
 
                 // RGB so times three
-                brew2_bgr[(x * this->size->X * 3) + y * 3] = color;
-                brew2_bgr[(x * this->size->X * 3) + y * 3 + 1] = color;
-                brew2_bgr[(x * this->size->X * 3) + y * 3 + 2] = color;
+                brew2_bgr[(x * this->size->X * 3) + y * 3] = color;// ? rand() % 255 : 0;
+                brew2_bgr[(x * this->size->X * 3) + y * 3 + 1] = color;// ? rand() % 255 : 0;
+                brew2_bgr[(x * this->size->X * 3) + y * 3 + 2] = color;// ? rand() % 255 : 0;
             }
     }
 };
@@ -164,7 +168,8 @@ int main(int argc, char **argv)
 	//Initialize console on top screen. Using NULL as the second argument tells the console library to use the internal console structure as current one
 	consoleInit(GFX_BOTTOM, NULL);
 
-	printf("Why so sad Smealum? We can haz 3DS homebrew!");
+    printf("For hackers... with love.\n");
+    printf("https://lghs.be\n");
     
 	//We don't need double buffering in this example. In this way we can draw our image only once on screen.
 	gfxSetDoubleBuffering(GFX_TOP, false);
@@ -172,15 +177,20 @@ int main(int argc, char **argv)
     //Get the bottom screen's frame buffer
     u8* fb = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
 
-    World* w = new World(new Vector2(400, 240));
+    World* w = new World(new Vector2(WIDTH, HEIGTH));
     w->GenerateCells();
     w->PopulateNeighbourgs();
 
-	
+    int frameCount = 0;
 	// Main loop
 	while (aptMainLoop())
 	{
-        w->Compute();
+        frameCount += 1;
+        //if(frameCount % 60 == 0)
+        {
+            w->Compute();            
+        }
+
         w->Print();
 
         //Copy our image in the bottom screen's frame buffer
