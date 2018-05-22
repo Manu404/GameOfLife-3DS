@@ -11,8 +11,8 @@
 #define HEIGTH 240
 #define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
 
-u8 brew2_bgr[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
-u32 brew2_bgr_size = PIXELBUFFER_SIZE * 3; 
+u8 world_framebuffer[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
+u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3; 
 
 class Vector2 // 2D Vector
 {
@@ -133,17 +133,10 @@ public:
 
     void Compute()
     {
-
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
             {
                 cells[x][y]->ComputeState();
-            }
-
-        for (int x = 0; x < size->X; x++)
-            for (int y = 0; y < size->Y; y++)
-            {
-                cells[x][y]->ApplyNewState();
             }
     }
 
@@ -152,12 +145,15 @@ public:
         for (int x = 0; x < size->Y; x++)
             for (int y = 0; y < size->X; y++)
             {
+                cells[x][y]->ApplyNewState();
+
                 int color = cells[x][y]->IsAlive ? 255 : 0;
 
                 // RGB so times three
-                brew2_bgr[(x * this->size->X * 3) + y * 3] = color;// ? rand() % 255 : 0;
-                brew2_bgr[(x * this->size->X * 3) + y * 3 + 1] = color;// ? rand() % 255 : 0;
-                brew2_bgr[(x * this->size->X * 3) + y * 3 + 2] = color;// ? rand() % 255 : 0;
+                int memOffset = (x * this->size->X * 3) + y * 3;
+                world_framebuffer[memOffset] = color;// ? rand() % 255 : 0;
+                world_framebuffer[memOffset + 1] = color;// ? rand() % 255 : 0;
+                world_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;
             }
     }
 };
@@ -200,7 +196,7 @@ int main(int argc, char **argv)
         w->Print();
 
         //Copy our image in the bottom screen's frame buffer
-        memcpy(fb, brew2_bgr, brew2_bgr_size);
+        memcpy(fb, world_framebuffer, world_framebuffer_size);
 
 		//Scan all the inputs. This should be done once for each frame
 		hidScanInput();
