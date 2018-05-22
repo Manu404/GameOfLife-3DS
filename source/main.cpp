@@ -7,9 +7,9 @@
 #include <unistd.h>
 #include <logo_bgr.h>
 
-#define WIDTH 400
-#define HEIGTH 240
-#define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
+#define WIDTH 5
+#define HEIGTH 5
+#define PIXELBUFFER_SIZE 96000 // 96000
 
 u8 world_framebuffer[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
 u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3; 
@@ -40,6 +40,7 @@ public:
     {
         this->IsAlive = isAlive;
         this->Position = position;
+        memset(neighbours, 0, (8 * sizeof(Cell*)));
     }
 
     void AddNeighbourgs(Cell* cell)
@@ -50,14 +51,16 @@ public:
 
     void ComputeState()
     {
+        //this->WasAlive = IsAlive;
         newState = IsAlive;
 
         // Compute alive cells
         int aliveCellCount = 0;
-        for (int x = 0; x < 8; x++)
+        if (currentNeighbors == 0) return;
+        for (int x = 0; x < currentNeighbors; x++)
             if (neighbours[x]->IsAlive)
                 aliveCellCount += 1;
-
+        
         // Apply Conways lay
         if (aliveCellCount < 2 && this->IsAlive) newState = 0;
         else if (aliveCellCount <= 3 && this->IsAlive) newState = 1;
@@ -80,7 +83,7 @@ public:
     World(Vector2* size)
     {
         this->size = size;
-        memset(cells, 0, size->X * size->Y);
+        memset(cells, 0, (size->X * size->Y * sizeof(Cell*)));
     }
 
     void GenerateCells()
@@ -124,10 +127,10 @@ public:
 
     Vector2* AdjustCoordonates(Vector2* vector)
     {
-        if (vector->X > this->size->Y) vector->X = 0;
+        if (vector->X >= this->size->X) vector->X = 0;
         else if (vector->X < 0) vector->X = this->size->Y;
-        if (vector->Y > this->size->Y) vector->Y = 0;
-        else if (vector->Y < 0) vector->Y = this->size->X;
+        if (vector->Y >= this->size->Y) vector->Y = 0;
+        else if (vector->Y < 0) vector->Y = this->size->Y;
         return vector;
     }
 
@@ -142,18 +145,18 @@ public:
 
     void Print()
     {
-        for (int x = 0; x < size->Y; x++)
-            for (int y = 0; y < size->X; y++)
+        for (int x = 0; x < size->X; x++)
+            for (int y = 0; y < size->Y; y++)
             {
                 cells[x][y]->ApplyNewState();
-
                 int color = cells[x][y]->IsAlive ? 255 : 0;
 
                 // RGB so times three
-                int memOffset = (x * this->size->X * 3) + y * 3;
+                int memOffset = ((x * this->size->Y) + (y)) * 3;
+                //if (memOffset > PIXELBUFFER_SIZE * 3) continue;
                 world_framebuffer[memOffset] = color;// ? rand() % 255 : 0;
                 world_framebuffer[memOffset + 1] = color;// ? rand() % 255 : 0;
-                world_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;
+                world_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;*/
             }
     }
 };
@@ -176,7 +179,6 @@ int main(int argc, char **argv)
     u8* fb = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
 
     u8* bottom_fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
-
     memcpy(bottom_fb, logo_bgr, logo_bgr_size);
 
     World* w = new World(new Vector2(WIDTH, HEIGTH));
