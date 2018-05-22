@@ -5,6 +5,7 @@
 #include <list>
 #include <math.h>
 #include <unistd.h>
+#include <logo_bgr.h>
 
 #define WIDTH 400
 #define HEIGTH 240
@@ -166,16 +167,21 @@ int main(int argc, char **argv)
 	gfxInitDefault();
 
 	//Initialize console on top screen. Using NULL as the second argument tells the console library to use the internal console structure as current one
-	consoleInit(GFX_BOTTOM, NULL);
+	//consoleInit(GFX_BOTTOM, NULL);
 
-    printf("For hackers... with love.\n");
-    printf("https://lghs.be\n");
+    //printf("For hackers... with love.\n");
+    //printf("https://lghs.be\n");
     
 	//We don't need double buffering in this example. In this way we can draw our image only once on screen.
-	gfxSetDoubleBuffering(GFX_TOP, false);
+    gfxSetDoubleBuffering(GFX_TOP, false);
+    gfxSetDoubleBuffering(GFX_BOTTOM, false);
 
     //Get the bottom screen's frame buffer
     u8* fb = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
+
+    u8* bottom_fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
+
+    memcpy(bottom_fb, logo_bgr, logo_bgr_size);
 
     World* w = new World(new Vector2(WIDTH, HEIGTH));
     w->GenerateCells();
