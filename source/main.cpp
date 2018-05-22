@@ -10,7 +10,7 @@
 #define HEIGTH 240
 #define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
 
-u8 brew2_bgr[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times truie as french says
+u8 brew2_bgr[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
 u32 brew2_bgr_size = PIXELBUFFER_SIZE * 3; 
 
 class Vector2 // 2D Vector
