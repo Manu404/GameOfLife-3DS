@@ -5,12 +5,12 @@
 #include <list>
 #include <math.h>
 
-#define IMAGE_SIZE 96000
+#define IMAGE_SIZE 400*240 // 96000
 
-u8 brew2_bgr[IMAGE_SIZE * 3];
-u32 brew2_bgr_size = IMAGE_SIZE * 3;
+u8 brew2_bgr[IMAGE_SIZE * 3]; // RGB RGB RGB RGB ... so times truie as french says
+u32 brew2_bgr_size = IMAGE_SIZE * 3; 
 
-class Vector2
+class Vector2 // 2D Vector
 {
 public:
     int X;
@@ -23,10 +23,10 @@ public:
     }
 };
 
-class Cell
+class Cell // Conway cell
 {
     Cell* neighbours[8];
-    int newState;
+    int newState; 
     int currentNeighbors = 0;
 public:
     int IsAlive;
@@ -47,11 +47,14 @@ public:
     void ComputeState()
     {
         newState = IsAlive;
+
+        // Compute alive cells
         int aliveCellCount = 0;
         for (int x = 0; x < 8; x++)
             if (neighbours[x]->IsAlive)
                 aliveCellCount += 1;
-        
+
+        // Apply Conways lay
         if (aliveCellCount < 2 && this->IsAlive) newState = 0;
         else if (aliveCellCount <= 3 && this->IsAlive) newState = 1;
         else if (aliveCellCount > 3 && this->IsAlive) newState = 0;
@@ -77,6 +80,7 @@ public:
 
     void GenerateCells()
     {
+        // Initialize random cells data
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
                 cells[x][y] = (new Cell(new Vector2(x, y), rand() % 7 == 0));
@@ -87,6 +91,7 @@ public:
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
             {
+                // Lazy way to direct access neighbors. If coord are out of screen they're adjusted by AdjustCooronates
                 Vector2* top_left = AdjustCoordonates(new Vector2(x + 1, y - 1));
                 Vector2* top_center = AdjustCoordonates(new Vector2(x + 1, y));
                 Vector2* top_right = AdjustCoordonates(new Vector2(x + 1, y + 1));
@@ -98,6 +103,7 @@ public:
                 Vector2* bottom_center = AdjustCoordonates(new Vector2(x - 1, y));
                 Vector2* bottom_right = AdjustCoordonates(new Vector2(x - 1, y + 1));
 
+                // Add each neighboors to neighboorhood
                 cells[x][y]->AddNeighbourgs(cells[top_left->X][top_left->Y]);
                 cells[x][y]->AddNeighbourgs(cells[top_center->X][top_center->Y]);
                 cells[x][y]->AddNeighbourgs(cells[top_right->X][top_right->Y]);
@@ -143,6 +149,7 @@ public:
             {
                 int color = cells[x][y]->IsAlive ? 255 : 0;
 
+                // RGB so times three
                 brew2_bgr[(x * this->size->X * 3) + y * 3] = color;
                 brew2_bgr[(x * this->size->X * 3) + y * 3 + 1] = color;
                 brew2_bgr[(x * this->size->X * 3) + y * 3 + 2] = color;
