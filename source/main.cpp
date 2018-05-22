@@ -1,3 +1,25 @@
+// MIT License
+// 
+// Copyright(c) 2018 Manu404 - istace.emmanuel@hotmail.com
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files(the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions :
+// 
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <3ds.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +33,7 @@
 #define HEIGTH 240
 #define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
 
-u8 world_framebuffer[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
+u8 universe_framebuffer[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
 u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3; 
 
 
@@ -30,6 +52,7 @@ public:
 
 class Cell // Conway cell
 {
+    Vector2* worldSize;
     Cell* neighbours[8];
     int newState; 
     int currentNeighbors = 0;
@@ -37,22 +60,13 @@ public:
     int IsAlive;
     Vector2* Position;
 
-    Cell()
-    {
-        
-    }
-
-    Cell(Vector2* position, int isAlive)
+    Cell(Vector2* position, int isAlive, Vector2* worldSize)
     {
         this->IsAlive = isAlive;
         this->Position = position;
-        newState = IsAlive;
+        this->newState = IsAlive;
+        this->worldSize = worldSize;
         memset(neighbours, 0, (8 * sizeof(Cell*)));
-    }
-
-    int GetState()
-    {
-        return IsAlive;
     }
 
     void AddNeighbourgs(Cell* cell)
@@ -82,11 +96,17 @@ public:
 
     Vector2* AdjustCoordonates(Vector2* vector)
     {
-        if (vector->X >= WIDTH) vector->X = 0;
-        else if (vector->X < 0) vector->X = WIDTH - 1;
-        if (vector->Y >= HEIGTH) vector->Y = 0;
-        else if (vector->Y < 0) vector->Y = HEIGTH - 1;
+        if (vector->X >= worldSize->X) vector->X = 0;
+        else if (vector->X < 0) vector->X = worldSize->X - 1;
+        if (vector->Y >= worldSize->Y) vector->Y = 0;
+        else if (vector->Y < 0) vector->Y = worldSize->Y - 1;
         return vector;
+    }
+
+    void SetNewstate(int state)
+    {
+        this->IsAlive = state;
+        this->newState = state;
     }
 
     void ApplyNewState()
@@ -95,74 +115,68 @@ public:
     }
 };
 
-class World
+class Universe
 {
-    Vector2* size;
+    Vector2* universSize;
+    int randFactor = 7;
 public:
 
-    Cell ** cells[];
+    size_t rows;
+    size_t cols;
+    Cell* cells[WIDTH][HEIGTH];
 
-    World(Vector2* size)
+    Universe(Vector2* size)
     {
-        this->size = size;
-
-        Cell** ary = new Cell*[size->X];
-        for (int i = 0; i < size->X; i++)
-            ary[i] = new Cell[size->Y];
+        this->universSize = size;
+        memset(cells, 0, (size->X * size->Y * sizeof(Cell*)));
     }
 
     void GenerateCells()
     {
         // Initialize random cells data
-        for (int x = 0; x < size->X; x++)
-            for (int y = 0; y < size->Y; y++)
-                cells[x][y] = new Cell(new Vector2(x, y), rand() % 7 == 0);
+        for (int x = 0; x < universSize->X; x++)
+            for (int y = 0; y < universSize->Y; y++)
+                cells[x][y] = new Cell(new Vector2(x, y), rand() % randFactor == 0, this->universSize);
     }
 
     void PopulateNeighbourgs()
     {
-        for (int x = 0; x < size->X; x++)
-            for (int y = 0; y < size->Y; y++)
+        for (int x = 0; x < universSize->X; x++)
+            for (int y = 0; y < universSize->Y; y++)
             {
-                // Lazy way to direct access neighbors. If coord are out of screen they're adjusted by AdjustCooronates
-                Vector2* top_left = AdjustCoordonates(new Vector2(x + 1, y - 1));
-                Vector2* top_center = AdjustCoordonates(new Vector2(x + 1, y));
-                Vector2* top_right = AdjustCoordonates(new Vector2(x + 1, y + 1));
+                for (int x2 = -1; x2 <= 1; x2++) // Iterate around the current position
+                    for(int y2 = -1; y2 <= 1; y2++)
+                    {
+                        Vector2* neighbourPosition = AdjustCoordonates(new Vector2(x + x2, y + y2));
 
-                Vector2* middle_left = AdjustCoordonates(new Vector2(x, y - 1));
-                Vector2* middle_right = AdjustCoordonates(new Vector2(x, y + 1));
-                
-                Vector2* bottom_left = AdjustCoordonates(new Vector2(x - 1, y - 1));
-                Vector2* bottom_center = AdjustCoordonates(new Vector2(x - 1, y));
-                Vector2* bottom_right = AdjustCoordonates(new Vector2(x - 1, y + 1));
+                        if (neighbourPosition->X == x && neighbourPosition->Y == y) continue;
 
-                // Add each neighboors to neighboorhood
-                cells[x][y]->AddNeighbourgs(cells[top_left->X][top_left->Y]);
-                cells[x][y]->AddNeighbourgs(cells[top_center->X][top_center->Y]);
-                cells[x][y]->AddNeighbourgs(cells[top_right->X][top_right->Y]);
+                        cells[x][y]->AddNeighbourgs(cells[neighbourPosition->X][neighbourPosition->Y]);
+                    }
+            }
+    }
 
-                cells[x][y]->AddNeighbourgs(cells[middle_left->X][middle_left->Y]);
-                cells[x][y]->AddNeighbourgs(cells[middle_right->X][middle_right->Y]);
-
-                cells[x][y]->AddNeighbourgs(cells[bottom_left->X][bottom_left->Y]);
-                cells[x][y]->AddNeighbourgs(cells[bottom_center->X][bottom_center->Y]);
-                cells[x][y]->AddNeighbourgs(cells[bottom_right->X][bottom_right->Y]);
+    void Reset()
+    {
+        for (int x = 0; x < universSize->X; x++)
+            for (int y = 0; y < universSize->Y; y++) {
+                cells[x][y]->SetNewstate((rand() % randFactor) == 0);
             }
     }
 
     Vector2* AdjustCoordonates(Vector2* vector)
     {
-        if (vector->X >= this->size->X) vector->X = 0;
-        else if (vector->X < 0) vector->X = this->size->Y - 1;
-        if (vector->Y >= this->size->Y) vector->Y = 0;
-        else if (vector->Y < 0) vector->Y = this->size->Y - 1;
+        if (vector->X >= this->universSize->X) vector->X = 0;
+        else if (vector->X < 0) vector->X = this->universSize->Y - 1;
+        if (vector->Y >= this->universSize->Y) vector->Y = 0;
+        else if (vector->Y < 0) vector->Y = this->universSize->Y - 1;
         return vector;
     }
 
     void Compute()
     {
-        for (int x = 0; x < size->X; x++)
-            for (int y = 0; y < size->Y; y++)
+        for (int x = 0; x < universSize->X; x++)
+            for (int y = 0; y < universSize->Y; y++)
             {
                 cells[x][y]->ComputeState();
             }
@@ -170,17 +184,17 @@ public:
 
     void Print()
     {
-        for (int x = 0; x < size->X; x++)
-            for (int y = 0; y < size->Y; y++)
+        for (int x = 0; x < universSize->X; x++)
+            for (int y = 0; y < universSize->Y; y++)
             {
                 cells[x][y]->ApplyNewState();
                 int color = cells[x][y]->IsAlive ? 255 : 0;
 
                 // RGB so times three
-                int memOffset = ((x * this->size->Y) + (y)) * 3;
-                world_framebuffer[memOffset] = color;// ? rand() % 255 : 0;
-                world_framebuffer[memOffset + 1] = color;// ? rand() % 255 : 0;
-                world_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;*/
+                int memOffset = ((x * this->universSize->Y) + (y)) * 3;
+                universe_framebuffer[memOffset] = color;// ? rand() % 255 : 0;
+                universe_framebuffer[memOffset + 1] = color;// ? rand() % 255 : 0;
+                universe_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;*/
             }
     }
 };
@@ -191,9 +205,6 @@ int main(int argc, char **argv)
 
 	//Initialize console on top screen. Using NULL as the second argument tells the console library to use the internal console structure as current one
 	//consoleInit(GFX_BOTTOM, NULL);
-
-    //printf("For hackers... with love.\n");
-    //printf("https://lghs.be\n");
     
 	//We don't need double buffering in this example. In this way we can draw our image only once on screen.
     gfxSetDoubleBuffering(GFX_TOP, false);
@@ -205,33 +216,56 @@ int main(int argc, char **argv)
     u8* bottom_framebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
     memcpy(bottom_framebuffer, logo_bgr, logo_bgr_size);
 
-    World* world = new World(new Vector2(WIDTH, HEIGTH));
-    world->GenerateCells();
-    world->PopulateNeighbourgs();
-    world->Compute();
+    Universe* universe = new Universe(new Vector2(WIDTH, HEIGTH));
+    universe->GenerateCells();
+    universe->PopulateNeighbourgs();
+    universe->Compute();
 
     int frameCount = 0;
     int speed = 1;
-	// Main loop
-	while (aptMainLoop())
-	{
-        frameCount += 1;
-        world->Print();
 
-        if(frameCount % speed == 0)
-            world->Compute();
+
+    u32 kDownOld = 0, kHeldOld = 0, kUpOld = 0; //In these variables there will be information about keys detected in the previous frame
+
+	// Main loop
+    while (aptMainLoop())
+    {
+        frameCount += 1;
+        universe->Print();
+
+        if (frameCount % speed == 0)
+            universe->Compute();
 
         //Copy our image in the bottom screen's frame buffer
-        memcpy(top_framebuffer, world_framebuffer, world_framebuffer_size);
+        memcpy(top_framebuffer, universe_framebuffer, world_framebuffer_size);
 
-		//Scan all the inputs. This should be done once for each frame
-		hidScanInput();
+        //Scan all the inputs. This should be done once for each frame
+        hidScanInput();
 
-		//hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
-		u32 kDown = hidKeysDown();
+        //hidKeysDown returns information about which buttons have been just pressed (and they weren't in the previous frame)
+        u32 kDown = hidKeysDown();
+        //hidKeysHeld returns information about which buttons have are held down in this frame
+        u32 kHeld = hidKeysHeld();
+        //hidKeysUp returns information about which buttons have been just released
+        u32 kUp = hidKeysUp();
 
-		if (kDown & KEY_START) break; // break in order to return to hbmenu
+        if (kDown & KEY_START) break; // break in order to return to hbmenu
 
+        if (kDown != kDownOld || kHeld != kHeldOld || kUp != kUpOld)
+        {
+            if (kDown & KEY_SELECT)
+                universe->Reset();
+
+            if (kDown & KEY_DUP)
+            {
+                if (speed > 0)
+                    speed -= 1;
+            }
+
+            if (kDown & KEY_DDOWN)
+                speed += 1;
+
+        }
 		// Flush and swap framebuffers
 		gfxFlushBuffers();
 		gfxSwapBuffers();
