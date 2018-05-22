@@ -9,7 +9,7 @@
 
 #define WIDTH 400
 #define HEIGTH 240
-#define PIXELBUFFER_SIZE 96000 // 96000
+#define PIXELBUFFER_SIZE WIDTH * HEIGTH // 96000
 
 u8 world_framebuffer[PIXELBUFFER_SIZE * 3]; // RGB RGB RGB RGB ... so times 3
 u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3; 
@@ -31,12 +31,16 @@ public:
 class Cell // Conway cell
 {
     Cell* neighbours[8];
-    std::list<Cell*> neighbours2;
     int newState; 
     int currentNeighbors = 0;
 public:
     int IsAlive;
     Vector2* Position;
+
+    Cell()
+    {
+        
+    }
 
     Cell(Vector2* position, int isAlive)
     {
@@ -55,48 +59,19 @@ public:
     {
         neighbours[currentNeighbors] = cell;
         currentNeighbors += 1;
-        neighbours2.push_back(cell);
     }
 
-    void ComputeState(Cell* cells [WIDTH][HEIGTH])
+    void ComputeState()
     {
         //this->WasAlive = IsAlive;
         newState = IsAlive;
 
         // Compute alive cells
         int aliveCellCount = 0;
-        /*if (currentNeighbors == 0) return;
+        if (currentNeighbors == 0) return;
         for (int x = 0; x < currentNeighbors; x++)
             if (neighbours[x]->IsAlive)
-                aliveCellCount += 1;*/
-        std::list<Cell*>::const_iterator iterator;
-
-        for (iterator = neighbours2.begin(); iterator != neighbours2.end(); ++iterator) {
-            if ((*iterator)->GetState())
                 aliveCellCount += 1;
-        }
-
-        /*Vector2* top_left = AdjustCoordonates(new Vector2(Position->X + 1, Position->Y - 1));
-        Vector2* top_center = AdjustCoordonates(new Vector2(Position->X + 1, Position->Y));
-        Vector2* top_right = AdjustCoordonates(new Vector2(Position->X + 1, Position->Y + 1));
-
-        Vector2* middle_left = AdjustCoordonates(new Vector2(Position->X, Position->Y - 1));
-        Vector2* middle_right = AdjustCoordonates(new Vector2(Position->X, Position->Y + 1));
-
-        Vector2* bottom_left = AdjustCoordonates(new Vector2(Position->X - 1, Position->Y - 1));
-        Vector2* bottom_center = AdjustCoordonates(new Vector2(Position->X - 1, Position->Y));
-        Vector2* bottom_right = AdjustCoordonates(new Vector2(Position->X - 1, Position->Y + 1));
-
-        if(cells[top_left->X][top_left->Y]->IsAlive)aliveCellCount+=1;
-        if(cells[top_center->X][top_center->Y]->IsAlive)aliveCellCount += 1;
-        if(cells[top_right->X][top_right->Y]->IsAlive)aliveCellCount += 1;
-        
-        if(cells[middle_left->X][middle_left->Y]->IsAlive)aliveCellCount += 1;
-        if(cells[middle_right->X][middle_right->Y]->IsAlive)aliveCellCount += 1;
-        
-        if(cells[bottom_left->X][bottom_left->Y]->IsAlive)aliveCellCount += 1;
-        if(cells[bottom_center->X][bottom_center->Y]->IsAlive)aliveCellCount += 1;
-        if(cells[bottom_right->X][bottom_right->Y]->IsAlive)aliveCellCount += 1;*/
         
         // Apply Conways lay
         if (aliveCellCount < 2 && this->IsAlive) newState = 0;
@@ -120,18 +95,20 @@ public:
     }
 };
 
-
 class World
 {
     Vector2* size;
 public:
 
-    Cell * cells[WIDTH][HEIGTH];
+    Cell ** cells[];
 
     World(Vector2* size)
     {
         this->size = size;
-        //memset(cells, 0, (size->X * size->Y * sizeof(Cell*)));
+
+        Cell** ary = new Cell*[size->X];
+        for (int i = 0; i < size->X; i++)
+            ary[i] = new Cell[size->Y];
     }
 
     void GenerateCells()
@@ -139,7 +116,7 @@ public:
         // Initialize random cells data
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
-                cells[x][y] = (new Cell(new Vector2(x, y), rand() % 7 == 0));
+                cells[x][y] = new Cell(new Vector2(x, y), rand() % 7 == 0);
     }
 
     void PopulateNeighbourgs()
@@ -187,7 +164,7 @@ public:
         for (int x = 0; x < size->X; x++)
             for (int y = 0; y < size->Y; y++)
             {
-                cells[x][y]->ComputeState(cells);
+                cells[x][y]->ComputeState();
             }
     }
 
@@ -223,25 +200,29 @@ int main(int argc, char **argv)
     gfxSetDoubleBuffering(GFX_BOTTOM, false);
 
     //Get the bottom screen's frame buffer
-    u8* fb = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
+    u8* top_framebuffer = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
 
-    u8* bottom_fb = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
-    memcpy(bottom_fb, logo_bgr, logo_bgr_size);
+    u8* bottom_framebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
+    memcpy(bottom_framebuffer, logo_bgr, logo_bgr_size);
 
-    World* w = new World(new Vector2(WIDTH, HEIGTH));
-    w->GenerateCells();
-    w->PopulateNeighbourgs();
-    w->Compute();
+    World* world = new World(new Vector2(WIDTH, HEIGTH));
+    world->GenerateCells();
+    world->PopulateNeighbourgs();
+    world->Compute();
 
     int frameCount = 0;
+    int speed = 1;
 	// Main loop
 	while (aptMainLoop())
 	{
-        w->Print();
-        w->Compute();
+        frameCount += 1;
+        world->Print();
+
+        if(frameCount % speed == 0)
+            world->Compute();
 
         //Copy our image in the bottom screen's frame buffer
-        memcpy(fb, world_framebuffer, world_framebuffer_size);
+        memcpy(top_framebuffer, world_framebuffer, world_framebuffer_size);
 
 		//Scan all the inputs. This should be done once for each frame
 		hidScanInput();
