@@ -78,10 +78,18 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Cell.cpp" />
+    <ClCompile Include="source\Game.cpp" />
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Universe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build\brew_bgr.h" />
+    <ClInclude Include="source\Cell.h" />
+    <ClInclude Include="source\Game.h" />
+    <ClInclude Include="source\Globals.h" />
+    <ClInclude Include="source\Universe.h" />
+    <ClInclude Include="source\Vector2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
