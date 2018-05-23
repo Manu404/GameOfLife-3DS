@@ -13,6 +13,8 @@ class Universe
 
     Vector2* AdjustCoordonates(Vector2* vector);
     
+    void GenerateCells();
+    void PopulateNeighbourgs();
 
 public:
 
@@ -20,8 +22,6 @@ public:
     u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3;
 
     Universe(Vector2* size);
-    void GenerateCells();
-    void PopulateNeighbourgs();
 
     void Reset();
     void Compute();

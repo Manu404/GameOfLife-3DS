@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "Cell.h"
+#include <stdlib.h>
 
 Cell::Cell(Vector2* position, int isAlive, Vector2* worldSize, Color* color)
 {
@@ -22,21 +23,20 @@ void Cell::AddNeighbourgs(Cell* cell)
 
 void Cell::ComputeState()
 {
-    //this->WasAlive = IsAlive;
-    newState = IsAlive;
-
     // Compute alive cells
     int aliveCellCount = 0;
-    if (currentNeighbors == 0) return;
     for (int x = 0; x < currentNeighbors; x++)
         if (neighbours[x]->IsAlive)
             aliveCellCount += 1;
 
     // Apply Conways lay
-    if (aliveCellCount < 2 && this->IsAlive) newState = 0;
-    else if (aliveCellCount <= 3 && this->IsAlive) newState = 1;
-    else if (aliveCellCount > 3 && this->IsAlive) newState = 0;
-    else if (aliveCellCount == 3 && !this->IsAlive) newState = 1;
+    if(this->IsAlive)
+    {
+        if (aliveCellCount < 2) newState = 0;
+        else if (aliveCellCount <= 3) newState = 1;
+        else newState = 0;
+    }
+    else if (aliveCellCount == 3) newState = 1;
 }
 
 Vector2* Cell::AdjustCoordonates(Vector2* vector)

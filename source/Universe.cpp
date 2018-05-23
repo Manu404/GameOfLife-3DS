@@ -8,6 +8,8 @@ Universe::Universe(Vector2* size)
 {
     this->universSize = size;
     memset(cells, 0, (size->X * size->Y * sizeof(Cell*)));
+    GenerateCells();
+    PopulateNeighbourgs();
 }
 
 void Universe::GenerateCells()
@@ -67,6 +69,7 @@ void Universe::Print()
         for (int y = 0; y < universSize->Y; y++)
         {
             cells[x][y]->ApplyNewState();
+
             int memOffset = ((x * this->universSize->Y) + (y)) * 3;
             if(cells[x][y]->IsAlive)
             {

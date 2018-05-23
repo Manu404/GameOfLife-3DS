@@ -11,6 +11,7 @@ class Cell // Conway cell
     int newState;
     int currentNeighbors = 0;
 public:
+    int WasAlive;
     int IsAlive;
     Vector2* Position;
     Color* color;
