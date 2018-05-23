@@ -2,6 +2,7 @@
 #define CELL_H
 
 #include "Vector2.h"
+#include "Color.h"
 
 class Cell // Conway cell
 {
@@ -12,8 +13,9 @@ class Cell // Conway cell
 public:
     int IsAlive;
     Vector2* Position;
+    Color* color;
 
-    Cell(Vector2* position, int isAlive, Vector2* worldSize);
+    Cell(Vector2* position, int isAlive, Vector2* worldSize, Color* color);
     void AddNeighbourgs(Cell* cell);
     void ComputeState();
     Vector2* AdjustCoordonates(Vector2* vector);

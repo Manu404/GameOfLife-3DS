@@ -4,12 +4,13 @@
 
 #include "Cell.h"
 
-Cell::Cell(Vector2* position, int isAlive, Vector2* worldSize)
+Cell::Cell(Vector2* position, int isAlive, Vector2* worldSize, Color* color)
 {
     this->IsAlive = isAlive;
     this->Position = position;
     this->newState = IsAlive;
     this->worldSize = worldSize;
+    this->color = color;
     memset(neighbours, 0, (8 * sizeof(Cell*)));
 }
 

@@ -15,7 +15,7 @@ void Universe::GenerateCells()
     // Initialize random cells data
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y] = new Cell(new Vector2(x, y), rand() % randFactor == 0, this->universSize);
+            cells[x][y] = new Cell(new Vector2(x, y), rand() % randFactor == 0, this->universSize, new Color(255,255,255));
 }
 
 void Universe::PopulateNeighbourgs()
@@ -67,12 +67,19 @@ void Universe::Print()
         for (int y = 0; y < universSize->Y; y++)
         {
             cells[x][y]->ApplyNewState();
-            int color = cells[x][y]->IsAlive ? 255 : 0;
-
-            // RGB so times three
             int memOffset = ((x * this->universSize->Y) + (y)) * 3;
-            universe_framebuffer[memOffset] = color;// ? rand() % 255 : 0;
-            universe_framebuffer[memOffset + 1] = color;// ? rand() % 255 : 0;
-            universe_framebuffer[memOffset + 2] = color;// ? rand() % 255 : 0;*/
+            if(cells[x][y]->IsAlive)
+            {
+                universe_framebuffer[memOffset] = cells[x][y]->color->B;// ? rand() % 255 : 0;
+                universe_framebuffer[memOffset + 1] = cells[x][y]->color->G;// ? rand() % 255 : 0;
+                universe_framebuffer[memOffset + 2] = cells[x][y]->color->R;// ? rand() % 255 : 0;*/
+            }
+            else
+            {
+                universe_framebuffer[memOffset] = 0;
+                universe_framebuffer[memOffset + 1] = 0;
+                universe_framebuffer[memOffset + 2] = 0;
+            }
+            // RGB so times three
         }
 }

@@ -86,6 +86,7 @@
   <ItemGroup>
     <ClInclude Include="build\brew_bgr.h" />
     <ClInclude Include="source\Cell.h" />
+    <ClInclude Include="source\Color.h" />
     <ClInclude Include="source\Game.h" />
     <ClInclude Include="source\Globals.h" />
     <ClInclude Include="source\Universe.h" />
