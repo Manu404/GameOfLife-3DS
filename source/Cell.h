@@ -14,9 +14,8 @@ public:
     int WasAlive;
     int IsAlive;
     Vector2* Position;
-    Color* color;
 
-    Cell(Vector2* position, int isAlive, Vector2* worldSize, Color* color);
+    Cell(Vector2* position, int isAlive, Vector2* worldSize);
     void AddNeighbourgs(Cell* cell);
     void ComputeState();
     Vector2* AdjustCoordonates(Vector2* vector);

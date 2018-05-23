@@ -17,7 +17,7 @@ void Universe::GenerateCells()
     // Initialize random cells data
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y] = new Cell(new Vector2(x, y), rand() % randFactor == 0, this->universSize, new Color(255,255,255));
+            cells[x][y] = new Cell(new Vector2(x, y), rand() % RandomFactor == 0, this->universSize);
 }
 
 void Universe::PopulateNeighbourgs()
@@ -41,7 +41,7 @@ void Universe::Reset()
 {
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++) {
-            cells[x][y]->SetNewstate((rand() % randFactor) == 0);
+            cells[x][y]->SetNewstate((rand() % RandomFactor) == 0);
         }
 }
 
@@ -63,26 +63,28 @@ void Universe::Compute()
         }
 }
 
-void Universe::Print()
+void Universe::Print(Color* Foreground, Color* Background)
 {
-    for (int x = 0; x < universSize->X; x++)
+    for (int x = 0; x < universSize->X; x++) {
+        int xMemOffset = (x * this->universSize->Y);
         for (int y = 0; y < universSize->Y; y++)
         {
             cells[x][y]->ApplyNewState();
 
-            int memOffset = ((x * this->universSize->Y) + (y)) * 3;
-            if(cells[x][y]->IsAlive)
+            int memOffset = (xMemOffset + y) * 3;
+            if (cells[x][y]->IsAlive)
             {
-                universe_framebuffer[memOffset] = cells[x][y]->color->B;// ? rand() % 255 : 0;
-                universe_framebuffer[memOffset + 1] = cells[x][y]->color->G;// ? rand() % 255 : 0;
-                universe_framebuffer[memOffset + 2] = cells[x][y]->color->R;// ? rand() % 255 : 0;*/
+                universe_framebuffer[memOffset] = Foreground->B;
+                universe_framebuffer[memOffset + 1] = Foreground->G;
+                universe_framebuffer[memOffset + 2] = Foreground->R;
             }
             else
             {
-                universe_framebuffer[memOffset] = 0;
-                universe_framebuffer[memOffset + 1] = 0;
-                universe_framebuffer[memOffset + 2] = 0;
+                universe_framebuffer[memOffset] = Background->B;
+                universe_framebuffer[memOffset + 1] = Background->R;
+                universe_framebuffer[memOffset + 2] = Background->G;
             }
-            // RGB so times three
         }
+    }
 }
+

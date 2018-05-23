@@ -5,20 +5,19 @@
 #include "Cell.h"
 #include <stdlib.h>
 
-Cell::Cell(Vector2* position, int isAlive, Vector2* worldSize, Color* color)
+Cell::Cell(Vector2* position, int isAlive, Vector2* worldSize)
 {
     this->IsAlive = isAlive;
     this->Position = position;
     this->newState = IsAlive;
     this->worldSize = worldSize;
-    this->color = color;
     memset(neighbours, 0, (8 * sizeof(Cell*)));
 }
 
 void Cell::AddNeighbourgs(Cell* cell)
 {
     neighbours[currentNeighbors] = cell;
-    currentNeighbors += 1;
+    currentNeighbors++;
 }
 
 void Cell::ComputeState()
@@ -27,7 +26,7 @@ void Cell::ComputeState()
     int aliveCellCount = 0;
     for (int x = 0; x < currentNeighbors; x++)
         if (neighbours[x]->IsAlive)
-            aliveCellCount += 1;
+            aliveCellCount++;
 
     // Apply Conways lay
     if(this->IsAlive)

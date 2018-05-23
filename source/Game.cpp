@@ -12,6 +12,7 @@ Game::Game()
 {
     InitializeSystem();
     InitializeUnivers();
+    InitializeColors();
 }
 
 void Game::RunMainLoop()
@@ -21,11 +22,17 @@ void Game::RunMainLoop()
     // Main loop
     while (aptMainLoop() && run)
     {
-        printf("ok");
-        frameCount += 1;
-        universe->Print();
+        frameCount++;
 
-        if (frameCount % speed == 0)
+        if (this->animateForeground)
+            this->Foreground->NextRGB(speedFactor);
+
+        if (this->animateBackground)
+            this->Background->ComputeComplementFromColor(this->Foreground);
+
+        universe->Print(this->Foreground, this->Background);
+
+        if (frameCount % speedFactor == 0)
             universe->Compute();
 
         HandleInputs();
@@ -55,30 +62,61 @@ void Game::InitializeUnivers()
     universe = new Universe(new Vector2(WIDTH, HEIGTH));
 }
 
+void Game::InitializeColors()
+{
+    this->Foreground = new Color(255, 255, 255);
+    this->Background = new Color(0, 0, 0);
+}
+
 void Game::HandleInputs()
 {
     hidScanInput();
 
     u32 kDown = hidKeysDown();
+    if (kDown & KEY_SELECT) {
+        run = !run; 
+        return;
+    }
+    
     u32 kHeld = hidKeysHeld();
     u32 kUp = hidKeysUp();
-
-    if (kDown & KEY_SELECT) run = 0;
 
     if (kDown != kDownOld || kHeld != kHeldOld || kUp != kUpOld)
     {
         if (kDown & KEY_START)
             universe->Reset();
 
-        if (kDown & KEY_DUP)
+        if (kHeld & KEY_DUP || kHeld & KEY_DRIGHT)
         {
-            if (speed > 0)
-                speed -= 1;
+            if (speedFactor > 0)
+                speedFactor--;
+        }
+        else if (kHeld & KEY_DDOWN || kHeld & KEY_DLEFT)
+            speedFactor++;
+
+
+        if (kDown & KEY_Y) {
+            this->animateForeground = !this->animateForeground;
+            if(!this->animateForeground)
+                this->Foreground = new Color(255, 255, 255);
         }
 
-        if (kDown & KEY_DDOWN)
-            speed += 1;
+        if (kDown & KEY_X) {
+            this->animateBackground = !this->animateBackground;
+            if(!this->animateBackground)
+                this->Background = new Color(0, 0, 0);
+        }
 
+        if (kHeld & KEY_L) {
+            universe->RandomFactor++;
+            universe->Reset();
+        }
+        else if (kHeld & KEY_R) {
+            if (universe->RandomFactor > 2) {
+                universe->RandomFactor--;
+            }
+            universe->Reset();
+        }
     }
 }
 
