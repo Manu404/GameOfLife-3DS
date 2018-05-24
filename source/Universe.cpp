@@ -28,9 +28,9 @@ void Universe::PopulateNeighbourgs()
             for (int x2 = -1; x2 <= 1; x2++) // Iterate around the current position
                 for (int y2 = -1; y2 <= 1; y2++)
                 {
-                    Vector2* neighbourPosition = AdjustCoordonates(new Vector2(x + x2, y + y2));
+                    if (x2 == 0 && y2 == 0) continue;
 
-                    if (neighbourPosition->X == x && neighbourPosition->Y == y) continue;
+                    Vector2* neighbourPosition = AdjustCoordonates(new Vector2(x + x2, y + y2));
 
                     cells[x][y]->AddNeighbourgs(cells[neighbourPosition->X][neighbourPosition->Y]);
                 }
@@ -48,7 +48,7 @@ void Universe::Reset()
 Vector2* Universe::AdjustCoordonates(Vector2* vector)
 {
     if (vector->X >= this->universSize->X) vector->X = 0;
-    else if (vector->X < 0) vector->X = this->universSize->Y - 1;
+    else if (vector->X < 0) vector->X = this->universSize->X - 1;
     if (vector->Y >= this->universSize->Y) vector->Y = 0;
     else if (vector->Y < 0) vector->Y = this->universSize->Y - 1;
     return vector;

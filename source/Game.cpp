@@ -24,11 +24,14 @@ void Game::RunMainLoop()
     {
         frameCount++;
 
-        if (this->animateForeground)
+        if (this->animateForeground) {
             this->Foreground->NextRGB(speedFactor);
 
-        if (this->animateBackground)
-            this->Background->ComputeComplementFromColor(this->Foreground);
+            if (this->animateBackground)
+                this->Background->ComputeComplementFromColor(this->Foreground);
+        }
+        else if (this->animateBackground)
+            this->Background->NextRGB(speedFactor);
 
         universe->Print(this->Foreground, this->Background);
 
@@ -100,8 +103,7 @@ void Game::HandleInputs()
             if(!this->animateForeground)
                 this->Foreground = new Color(255, 255, 255);
         }
-
-        if (kDown & KEY_X) {
+        else if (kDown & KEY_X) {
             this->animateBackground = !this->animateBackground;
             if(!this->animateBackground)
                 this->Background = new Color(0, 0, 0);
@@ -128,7 +130,7 @@ void Game::FlushBuffer()
 
 void Game::RenderTopScreen()
 {
-    memcpy(top_framebuffer, &(universe->universe_framebuffer), universe->world_framebuffer_size);
+    memcpy(top_framebuffer, (universe->universe_framebuffer), universe->world_framebuffer_size);
 }
 
 void Game::RenderBottomScreen()
