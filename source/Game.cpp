@@ -33,7 +33,7 @@ void Game::RunMainLoop()
         else if (this->animateBackground)
             this->Background->NextRGB(speedFactor);
 
-        universe->Print(this->Foreground, this->Background);
+        universe->Print(this->Foreground, this->Background, zoomFactor, viewPortX, viewPortY);
 
         if (frameCount % speedFactor == 0)
             universe->Compute();
@@ -54,10 +54,15 @@ void Game::InitializeSystem()
     gfxInitDefault();
 
     gfxSetDoubleBuffering(GFX_TOP, false);
-    gfxSetDoubleBuffering(GFX_BOTTOM, false);
-
     top_framebuffer = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL);
-    bottom_framebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
+
+    if (DEBUG)
+        consoleInit(GFX_BOTTOM, NULL);
+    else
+    {
+        gfxSetDoubleBuffering(GFX_BOTTOM, false);
+        bottom_framebuffer = gfxGetFramebuffer(GFX_BOTTOM, GFX_RIGHT, NULL, NULL);
+    }
 }
 
 void Game::InitializeUnivers()
@@ -89,14 +94,58 @@ void Game::HandleInputs()
         if (kDown & KEY_START)
             universe->Reset();
 
-        if (kHeld & KEY_DUP || kHeld & KEY_DRIGHT)
+        if (kHeld & KEY_DLEFT)
         {
             if (speedFactor > 0)
                 speedFactor--;
         }
-        else if (kHeld & KEY_DDOWN || kHeld & KEY_DLEFT)
+        else if (kHeld & KEY_DRIGHT) {
             speedFactor++;
+        }
 
+
+        if (kHeld & KEY_CPAD_LEFT)
+        {
+            if (viewPortX + (scrollSpeed * zoomFactor) > scrollSpeed * zoomFactor)
+                viewPortX -= scrollSpeed * zoomFactor;
+            else
+                viewPortX = 0;
+        }
+        if (kHeld & KEY_CPAD_RIGHT) {
+            if(viewPortX + (scrollSpeed * zoomFactor) < WIDTH - (scrollSpeed * zoomFactor) - (WIDTH / zoomFactor))
+                viewPortX += scrollSpeed * zoomFactor;
+            else
+                viewPortX = WIDTH - (WIDTH / zoomFactor);
+        }
+
+        if (kHeld & KEY_CPAD_DOWN)
+        {
+            if (viewPortY + (scrollSpeed * zoomFactor) > scrollSpeed * zoomFactor)
+                viewPortY -= scrollSpeed * zoomFactor;
+            else
+                viewPortY = 0;
+        }
+        if (kHeld & KEY_CPAD_UP) {
+            if (viewPortY + (scrollSpeed * zoomFactor) < HEIGTH - (scrollSpeed * zoomFactor) - (HEIGTH / zoomFactor))
+                viewPortY += scrollSpeed * zoomFactor;
+            else
+                viewPortY = HEIGTH - (HEIGTH / zoomFactor);
+        }
+
+
+        if (kDown & KEY_DDOWN)
+        {
+            if (zoomFactor > 1)
+                zoomFactor--;
+        }
+        else if (kDown & KEY_DUP) {
+            zoomFactor++;
+
+            if (viewPortY > HEIGTH - (HEIGTH / zoomFactor))
+                viewPortY = HEIGTH - (HEIGTH / zoomFactor);
+            if (viewPortX > WIDTH - (WIDTH / zoomFactor))
+                viewPortX = WIDTH - (WIDTH / zoomFactor);
+        }
 
         if (kDown & KEY_Y) {
             this->animateForeground = !this->animateForeground;
@@ -135,5 +184,6 @@ void Game::RenderTopScreen()
 
 void Game::RenderBottomScreen()
 {
-    memcpy(bottom_framebuffer, logo_bgr, logo_bgr_size);
+    if(!DEBUG)
+        memcpy(bottom_framebuffer, logo_bgr, logo_bgr_size);
 }

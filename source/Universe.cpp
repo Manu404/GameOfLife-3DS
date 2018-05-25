@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "Globals.h"
+#include <stdio.h>
 
 Universe::Universe(Vector2* size)
 {
@@ -63,26 +64,90 @@ void Universe::Compute()
         }
 }
 
-void Universe::Print(Color* Foreground, Color* Background)
+void Universe::PrintPixel(int memOffset, Color* color)
 {
+    universe_framebuffer[memOffset] = color->B;
+    universe_framebuffer[memOffset + 1] = color->G;
+    universe_framebuffer[memOffset + 2] = color->R;
+}
+
+int Universe::ConvertCoordonatesToMemoryLocation(int x, int y)
+{
+    return ((x * this->universSize->Y) + y) * 3;
+}
+
+int AdjustViewport(int zoomFactor, int screenSize, int viewPort)
+{
+    if (viewPort + (screenSize / zoomFactor) > screenSize - 1)
+        return screenSize - (screenSize / zoomFactor);
+    return viewPort;
+}
+
+// This method would need a lot of refactorings, mainly extract methods, but until then I'll write comments, sorry.
+void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int viewPortX, int viewPortY)
+{
+    // The current displayed cell position
+    int currentX = 0;
+    int currentY = 0;
+
+    // Adjust viewport to avoid out of bound
+    viewPortX = AdjustViewport(zoomFactor, WIDTH, viewPortX);
+    viewPortY = AdjustViewport(zoomFactor, HEIGTH, viewPortY);
+    
+    // compute viewport min max coord
+    const int minX = viewPortX;
+    const int minY = viewPortY;
+    const int maxX = viewPortX + ((universSize->X - 1) / (zoomFactor));
+    const int maxY = viewPortY + ((universSize->Y - 1) / (zoomFactor));
+
+    // iterate over each cell
     for (int x = 0; x < universSize->X; x++) {
-        int xMemOffset = (x * this->universSize->Y);
         for (int y = 0; y < universSize->Y; y++)
         {
             cells[x][y]->ApplyNewState();
 
-            int memOffset = (xMemOffset + y) * 3;
-            if (cells[x][y]->IsAlive)
-            {
-                universe_framebuffer[memOffset] = Foreground->B;
-                universe_framebuffer[memOffset + 1] = Foreground->G;
-                universe_framebuffer[memOffset + 2] = Foreground->R;
+            // if cell is outside the viewport, continue
+            if (x > (maxX) || y > (maxY) || x < (minX) || y < (minY)) continue;
+
+            // iterate over zoomfactor, x axis, if zoom is 2 we need to draw two pixel instead of one
+            for (int xi = 0; xi < zoomFactor; xi++) {
+
+                // if out of bound, continue
+                if ((currentX * zoomFactor) + xi > WIDTH) continue;
+
+                // iterate over zoomfactor, y axis
+                for (int yi = 0; yi < zoomFactor; yi++) {
+
+                    // if out of bound, continue
+                    if ((currentY * zoomFactor) + yi > HEIGTH) continue;
+
+                    // Compute pixel position and get memory location
+                    const int pixelToDraw_x = (currentX * zoomFactor) + xi;
+                    const int pixelToDraw_y = (currentY * zoomFactor) + yi;
+                    const int memOffset = ConvertCoordonatesToMemoryLocation(pixelToDraw_x, pixelToDraw_y);
+
+                    if (memOffset >= world_framebuffer_size) continue; // just to be sure
+
+                    // Draw correct color to memory location
+                    if (cells[x][y]->IsAlive)
+                    {
+                        PrintPixel(memOffset, Foreground);
+                    }
+                    else
+                    {
+                        PrintPixel(memOffset, Background);
+                    }
+                }
             }
-            else
+
+            // if we're here, we've drawn a cell, go to next one
+            if (currentY == ((HEIGTH - 1) / zoomFactor))
             {
-                universe_framebuffer[memOffset] = Background->B;
-                universe_framebuffer[memOffset + 1] = Background->R;
-                universe_framebuffer[memOffset + 2] = Background->G;
+                currentX += 1;
+                currentY = 0;
+            }
+            else {
+                currentY += 1;
             }
         }
     }
