@@ -25,13 +25,13 @@ void Game::RunMainLoop()
         frameCount++;
 
         if (this->animateForeground) {
-            this->Foreground->NextRGB(speedFactor);
+            this->Foreground->NextGradientColor(speedFactor);
 
             if (this->animateBackground)
                 this->Background->ComputeComplementFromColor(this->Foreground);
         }
         else if (this->animateBackground)
-            this->Background->NextRGB(speedFactor);
+            this->Background->NextGradientColor(speedFactor);
 
         universe->Print(this->Foreground, this->Background, zoomFactor, viewPortX, viewPortY);
 

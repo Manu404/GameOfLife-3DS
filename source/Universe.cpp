@@ -64,8 +64,12 @@ void Universe::Compute()
         }
 }
 
-void Universe::PrintPixel(int memOffset, Color* color)
+void Universe::PrintPixel(int x, int y, Color* color)
 {
+    const int memOffset = ConvertCoordonatesToMemoryLocation(x, y);
+
+    if (memOffset >= world_framebuffer_size) return; // just to be sure
+
     universe_framebuffer[memOffset] = color->B;
     universe_framebuffer[memOffset + 1] = color->G;
     universe_framebuffer[memOffset + 2] = color->R;
@@ -124,19 +128,19 @@ void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int v
                     // Compute pixel position and get memory location
                     const int pixelToDraw_x = (currentX * zoomFactor) + xi;
                     const int pixelToDraw_y = (currentY * zoomFactor) + yi;
-                    const int memOffset = ConvertCoordonatesToMemoryLocation(pixelToDraw_x, pixelToDraw_y);
 
-                    if (memOffset >= world_framebuffer_size) continue; // just to be sure
-
-                    // Draw correct color to memory location
-                    if (cells[x][y]->IsAlive)
+                    // Draw border
+                    if (x + xi == 0 || (x + xi == WIDTH - 1 && xi == 0)
+                        || y + yi == 0 || (y + yi == HEIGTH - 1 && yi == 0))
                     {
-                        PrintPixel(memOffset, Foreground);
+                        PrintPixel(pixelToDraw_x, pixelToDraw_y, new Color(255, 255, 255));
                     }
                     else
                     {
-                        PrintPixel(memOffset, Background);
+                        // Draw correct color to memory location
+                        PrintPixel(pixelToDraw_x, pixelToDraw_y, cells[x][y]->IsAlive ? Foreground : Background);
                     }
+
                 }
             }
 

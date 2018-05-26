@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#define DEBUG 1
+#define DEBUG 0
 
 #include <3ds/services/am.h>
 #include "Universe.h"

@@ -15,7 +15,7 @@ class Universe
     void GenerateCells();
     void PopulateNeighbourgs();
     
-    void PrintPixel(int memOffset, Color* color);
+    void PrintPixel(int x, int y, Color* color);
 
     int ConvertCoordonatesToMemoryLocation(int x, int y);
 
