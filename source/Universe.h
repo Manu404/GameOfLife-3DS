@@ -8,14 +8,14 @@
 class Universe
 {
     Vector2* universSize;
-    Cell* cells[WIDTH][HEIGTH];
+    Cell* cells[UNIVERSE_WIDTH][UNIVERSE_HEIGHT];
 
     Vector2* AdjustCoordonates(Vector2* vector);
     
     void GenerateCells();
     void PopulateNeighbourgs();
     
-    void PrintPixel(int x, int y, Color* color);
+    void PrintCell(int x, int y, Color* color);
 
     int ConvertCoordonatesToMemoryLocation(int x, int y);
 

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "Globals.h"
 #include <stdio.h>
+#include <pattern_bgr.h>
 
 Universe::Universe(Vector2* size)
 {
@@ -18,7 +19,7 @@ void Universe::GenerateCells()
     // Initialize random cells data
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y] = new Cell(new Vector2(x, y), rand() % RandomFactor == 0, this->universSize);
+            cells[x][y] = new Cell(new Vector2(x, y), pattern_bgr[ConvertCoordonatesToMemoryLocation(x, y)] != 255, universSize);
 }
 
 void Universe::PopulateNeighbourgs()
@@ -41,9 +42,8 @@ void Universe::PopulateNeighbourgs()
 void Universe::Reset()
 {
     for (int x = 0; x < universSize->X; x++)
-        for (int y = 0; y < universSize->Y; y++) {
+        for (int y = 0; y < universSize->Y; y++)
             cells[x][y]->SetNewstate((rand() % RandomFactor) == 0);
-        }
 }
 
 Vector2* Universe::AdjustCoordonates(Vector2* vector)
@@ -59,25 +59,27 @@ void Universe::Compute()
 {
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-        {
             cells[x][y]->ComputeState();
-        }
 }
 
-void Universe::PrintPixel(int x, int y, Color* color)
+void Universe::PrintCell(int x, int y, Color* color)
 {
-    const int memOffset = ConvertCoordonatesToMemoryLocation(x, y);
+    for (int xoffset = 0; xoffset < CELL_SIZE; xoffset++)
+        for(int yoffset = 0; yoffset < CELL_SIZE; yoffset++)
+        {
+            const int memOffset = ConvertCoordonatesToMemoryLocation((x * CELL_SIZE) + xoffset, (y * CELL_SIZE) + yoffset);
 
-    if (memOffset >= world_framebuffer_size) return; // just to be sure
+            if (memOffset >= world_framebuffer_size) return; // just to be sure
 
-    universe_framebuffer[memOffset] = color->B;
-    universe_framebuffer[memOffset + 1] = color->G;
-    universe_framebuffer[memOffset + 2] = color->R;
+            universe_framebuffer[memOffset] = color->B;
+            universe_framebuffer[memOffset + 1] = color->G;
+            universe_framebuffer[memOffset + 2] = color->R;            
+        }
 }
 
 int Universe::ConvertCoordonatesToMemoryLocation(int x, int y)
 {
-    return ((x * this->universSize->Y) + y) * 3;
+    return ((x * HEIGTH) + y) * 3;
 }
 
 int AdjustViewport(int zoomFactor, int screenSize, int viewPort)
@@ -91,19 +93,19 @@ int AdjustViewport(int zoomFactor, int screenSize, int viewPort)
 void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int viewPortX, int viewPortY)
 {
     // The current displayed cell position
-    int currentX = 0;
-    int currentY = 0;
+    int currentCellX = 0;
+    int currentCellY = 0;
 
     // Adjust viewport to avoid out of bound
-    viewPortX = AdjustViewport(zoomFactor, WIDTH, viewPortX);
-    viewPortY = AdjustViewport(zoomFactor, HEIGTH, viewPortY);
+    viewPortX = AdjustViewport(zoomFactor, universSize->X, viewPortX);
+    viewPortY = AdjustViewport(zoomFactor, universSize->Y, viewPortY);
     
     // compute viewport min max coord
     const int minX = viewPortX;
     const int minY = viewPortY;
     const int maxX = viewPortX + ((universSize->X - 1) / (zoomFactor));
     const int maxY = viewPortY + ((universSize->Y - 1) / (zoomFactor));
-
+    
     // iterate over each cell
     for (int x = 0; x < universSize->X; x++) {
         for (int y = 0; y < universSize->Y; y++)
@@ -114,44 +116,42 @@ void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int v
             if (x > (maxX) || y > (maxY) || x < (minX) || y < (minY)) continue;
 
             // iterate over zoomfactor, x axis, if zoom is 2 we need to draw two pixel instead of one
-            for (int xi = 0; xi < zoomFactor; xi++) {
+            for (int xi = 0; xi < (zoomFactor); xi++) {
 
                 // if out of bound, continue
-                if ((currentX * zoomFactor) + xi > WIDTH) continue;
+                if ((currentCellX * zoomFactor) + xi > universSize->X) continue;
 
                 // iterate over zoomfactor, y axis
-                for (int yi = 0; yi < zoomFactor; yi++) {
+                for (int yi = 0; yi < (zoomFactor); yi++) {
 
                     // if out of bound, continue
-                    if ((currentY * zoomFactor) + yi > HEIGTH) continue;
+                    if ((currentCellY * zoomFactor) + yi > universSize->Y) continue;
 
-                    // Compute pixel position and get memory location
-                    const int pixelToDraw_x = (currentX * zoomFactor) + xi;
-                    const int pixelToDraw_y = (currentY * zoomFactor) + yi;
+                    // Compute cell position and get memory location
+                    const int cellToDrawX = (currentCellX * zoomFactor) + xi;
+                    const int cellToDrawY = (currentCellY * zoomFactor) + yi;
 
-                    // Draw border
-                    if (x + xi == 0 || (x + xi == WIDTH - 1 && xi == 0)
-                        || y + yi == 0 || (y + yi == HEIGTH - 1 && yi == 0))
+                    // Draw border or draw cell with correct color
+                    if ((x + xi == 0 || (x + xi == universSize->X && xi == zoomFactor - 1))
+                        || ( y + yi == 0 || (y + yi == universSize->Y && yi == zoomFactor - 1)))
                     {
-                        PrintPixel(pixelToDraw_x, pixelToDraw_y, new Color(255, 255, 255));
+                        PrintCell(cellToDrawX, cellToDrawY, new Color(255, 255, 255));
                     }
                     else
                     {
-                        // Draw correct color to memory location
-                        PrintPixel(pixelToDraw_x, pixelToDraw_y, cells[x][y]->IsAlive ? Foreground : Background);
+                        PrintCell(cellToDrawX, cellToDrawY, cells[x][y]->IsAlive ? Foreground : Background);
                     }
-
                 }
             }
 
-            // if we're here, we've drawn a cell, go to next one
-            if (currentY == ((HEIGTH - 1) / zoomFactor))
+            // if we're here, we've drawn a cell, go to next one, if end of line, skip to next one
+            if (currentCellY == ((universSize->Y - 1) / zoomFactor))
             {
-                currentX += 1;
-                currentY = 0;
+                currentCellX += 1;
+                currentCellY = 0;
             }
             else {
-                currentY += 1;
+                currentCellY += 1;
             }
         }
     }

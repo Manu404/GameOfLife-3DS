@@ -67,7 +67,7 @@ void Game::InitializeSystem()
 
 void Game::InitializeUnivers()
 {
-    universe = new Universe(new Vector2(WIDTH, HEIGTH));
+    universe = new Universe(new Vector2(UNIVERSE_WIDTH, UNIVERSE_HEIGHT));
 }
 
 void Game::InitializeColors()
@@ -112,10 +112,10 @@ void Game::HandleInputs()
                 viewPortX = 0;
         }
         if (kHeld & KEY_CPAD_RIGHT) {
-            if(viewPortX + (scrollSpeed * zoomFactor) < WIDTH - (scrollSpeed * zoomFactor) - (WIDTH / zoomFactor))
+            if(viewPortX + (scrollSpeed * zoomFactor) < UNIVERSE_WIDTH - (scrollSpeed * zoomFactor) - (UNIVERSE_WIDTH / zoomFactor))
                 viewPortX += scrollSpeed * zoomFactor;
             else
-                viewPortX = WIDTH - (WIDTH / zoomFactor);
+                viewPortX = UNIVERSE_WIDTH - (UNIVERSE_WIDTH / zoomFactor);
         }
 
         if (kHeld & KEY_CPAD_DOWN)
@@ -126,10 +126,10 @@ void Game::HandleInputs()
                 viewPortY = 0;
         }
         if (kHeld & KEY_CPAD_UP) {
-            if (viewPortY + (scrollSpeed * zoomFactor) < HEIGTH - (scrollSpeed * zoomFactor) - (HEIGTH / zoomFactor))
+            if (viewPortY + (scrollSpeed * zoomFactor) < UNIVERSE_HEIGHT - (scrollSpeed * zoomFactor) - (UNIVERSE_HEIGHT / zoomFactor))
                 viewPortY += scrollSpeed * zoomFactor;
             else
-                viewPortY = HEIGTH - (HEIGTH / zoomFactor);
+                viewPortY = UNIVERSE_HEIGHT - (UNIVERSE_HEIGHT / zoomFactor);
         }
 
 
@@ -141,10 +141,10 @@ void Game::HandleInputs()
         else if (kDown & KEY_DUP) {
             zoomFactor++;
 
-            if (viewPortY > HEIGTH - (HEIGTH / zoomFactor))
-                viewPortY = HEIGTH - (HEIGTH / zoomFactor);
-            if (viewPortX > WIDTH - (WIDTH / zoomFactor))
-                viewPortX = WIDTH - (WIDTH / zoomFactor);
+            if (viewPortY > UNIVERSE_HEIGHT - (UNIVERSE_HEIGHT / zoomFactor))
+                viewPortY = UNIVERSE_HEIGHT - (UNIVERSE_HEIGHT / zoomFactor);
+            if (viewPortX > UNIVERSE_WIDTH - (UNIVERSE_WIDTH / zoomFactor))
+                viewPortX = UNIVERSE_WIDTH - (UNIVERSE_WIDTH / zoomFactor);
         }
 
         if (kDown & KEY_Y) {
