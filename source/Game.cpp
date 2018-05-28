@@ -89,17 +89,15 @@ void Game::HandleInputs()
     u32 kHeld = hidKeysHeld();
     u32 kUp = hidKeysUp();
 
-    if (kDown != kDownOld || kHeld != kHeldOld || kUp != kUpOld)
-    {
         if (kDown & KEY_START)
             universe->Reset();
 
-        if (kHeld & KEY_DLEFT)
+        if (kDown & KEY_DLEFT)
         {
             if (speedFactor > 0)
                 speedFactor--;
         }
-        else if (kHeld & KEY_DRIGHT) {
+        else if (kDown & KEY_DRIGHT) {
             speedFactor++;
         }
 
@@ -168,7 +166,10 @@ void Game::HandleInputs()
             }
             universe->Reset();
         }
-    }
+
+        kDownOld = kDown;
+        kHeldOld = kHeld;
+        kUpOld = kUp;
 }
 
 void Game::FlushBuffer()
@@ -179,7 +180,7 @@ void Game::FlushBuffer()
 
 void Game::RenderTopScreen()
 {
-    memcpy(top_framebuffer, (universe->universe_framebuffer), universe->world_framebuffer_size);
+    memcpy(top_framebuffer, (universe->universe_framebuffer), universe->universe_framebuffer_size);
 }
 
 void Game::RenderBottomScreen()

@@ -16,15 +16,17 @@ class Universe
     void PopulateNeighbourgs();
     
     void PrintCell(int x, int y, Color* color);
+    void PrintPixel(int x, int y, Color* color);
 
+    int AdjustViewport(int zoomFactor, int screenSize, int viewPort);
     int ConvertCoordonatesToMemoryLocation(int x, int y);
-
+    int ConvertImageCoordonatesToMemoryLocation(int x, int y);
 public:
 
     int RandomFactor = 7;
 
     u8 universe_framebuffer[PIXELBUFFER_SIZE * 3]; // BGR BGR BGR !!! REVERSED !!!
-    u32 world_framebuffer_size = PIXELBUFFER_SIZE * 3;
+    u32 universe_framebuffer_size = PIXELBUFFER_SIZE * 3;
 
     Universe(Vector2* size);
 
