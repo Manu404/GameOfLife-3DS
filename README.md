@@ -7,5 +7,5 @@ To build yourself, there's a visual studio project and a make file, require DevK
 For support contact me or anybody on EFNet #3dsdev, nice community, you'll get real help there.
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=HYdfk4wpGFQ&feature=youtu.beE"><img src="https://img.youtube.com/vi/HYdfk4wpGFQ/0.jpg" alt="IMAGE ALT TEXT"></a>
+  <a href="https://www.youtube.com/watch?v=T69eCiTa-0o&feature=youtu.beE"><img src="https://img.youtube.com/vi/T69eCiTa-0o/0.jpg" alt="IMAGE ALT TEXT"></a>
 </div>
