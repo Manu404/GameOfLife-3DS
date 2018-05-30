@@ -23,6 +23,7 @@
 #include <3ds.h>
 #include <stdio.h>
 #include "Game.h"
+#include "opc_client.h"
 
 int main(int argc, char **argv)
 {

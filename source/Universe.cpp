@@ -43,7 +43,7 @@ void Universe::Reset()
 {
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y]->SetNewstate((rand() % RandomFactor) == 0);
+            cells[x][y]->SetNewstate(pattern_bgr[ConvertImageCoordonatesToMemoryLocation(x, y)] != 255);
 }
 
 Vector2* Universe::AdjustCoordonates(Vector2* vector)
@@ -82,6 +82,17 @@ void Universe::PrintPixel(int x, int y, Color* color)
     universe_framebuffer[memOffset + 2] = color->R;
 }
 
+void Universe::PrintCellToOPCBuffer(int x, int y, Color* color)
+{
+    const int memOffset = ConvertCoordonatesToOPCLocation(x, y);
+
+    if (memOffset >= universe_framebuffer_size_opc) return; // just to be sure
+
+    universe_framebuffer_opc[memOffset] = color->R;
+    universe_framebuffer_opc[memOffset + 1] = color->G;
+    universe_framebuffer_opc[memOffset + 2] = color->B;
+}
+
 int Universe::ConvertImageCoordonatesToMemoryLocation(int x, int y)
 {
     return ((x * UNIVERSE_HEIGHT) + y) * 3;
@@ -91,6 +102,11 @@ int Universe::ConvertImageCoordonatesToMemoryLocation(int x, int y)
 int Universe::ConvertCoordonatesToMemoryLocation(int x, int y)
 {
     return ((x * HEIGTH) + y) * 3;
+}
+
+int Universe::ConvertCoordonatesToOPCLocation(int x, int y)
+{
+    return ((x * UNIVERSE_HEIGHT) + y) * 3;
 }
 
 int Universe::AdjustViewport(int zoomFactor, int screenSize, int viewPort)
@@ -104,6 +120,7 @@ int Universe::AdjustViewport(int zoomFactor, int screenSize, int viewPort)
 void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int viewPortX, int viewPortY)
 {
     memset(universe_framebuffer, 10, universe_framebuffer_size);
+    memset(universe_framebuffer_opc, 10, universe_framebuffer_size_opc);
 
     // The current displayed cell position
     int currentCellX = 0;
@@ -146,9 +163,14 @@ void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int v
                     const int cellToDrawY = (currentCellY * zoomFactor) + yi;
 
                     // Draw border or draw cell with correct color
-                    PrintCell(cellToDrawX, cellToDrawY, cells[x][y]->IsAlive ? Foreground : Background);
+                    PrintCell(cellToDrawX, cellToDrawY, Foreground);
+
+                    // draw to opc buffer
+                    PrintCellToOPCBuffer(cellToDrawX, cellToDrawY, Foreground);
                 }
             }
+            else
+                PrintCellToOPCBuffer(currentCellX, currentCellY, Background);
 
             // if we're here, we've drawn a cell, go to next one, if end of y, go to next x
             if (currentCellY == ((universSize->Y - 1) / zoomFactor))

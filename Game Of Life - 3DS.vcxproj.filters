@@ -39,6 +39,12 @@
     <ClInclude Include="RLEParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\inet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\opc_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">

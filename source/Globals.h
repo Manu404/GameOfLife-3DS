@@ -6,7 +6,7 @@
 #define WIDTH 400
 #define HEIGTH 240
 
-#define CELL_SIZE 2
+#define CELL_SIZE 10
 
 #define UNIVERSE_WIDTH (WIDTH / CELL_SIZE)
 #define UNIVERSE_HEIGHT (HEIGTH / CELL_SIZE)
