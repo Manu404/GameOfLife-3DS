@@ -13,7 +13,6 @@
 Game::Game()
 {
     InitializeSystem();
-    //InitializeOPCClient();
     InitializeUnivers();
     InitializeColors();
 }
@@ -33,9 +32,7 @@ void Game::RunMainLoop()
 
         if (frameCount % speedFactor == 0)
             universe->Compute();
-
-        //SendOPCFrame();
-
+        
         RenderTopScreen();
 
         FlushBuffer();
@@ -46,68 +43,6 @@ void Game::RunMainLoop()
     }
 
     gfxExit();
-}
-
-void Game::SendOPCFrame()
-{
-    BuildOPCFrame();
-
-    this->client->write(frameBuffer);
-}
-
-void Game::BuildOPCFrame()
-{
-    uint8_t *dest = OPCClient::Header::view(frameBuffer).data();
-    int shift = 0;
-    for (int i = 0; i < UNIVERSE_HEIGHT * UNIVERSE_WIDTH; i++) {
-        if (((i != 0) && (i % 64 == 60 || i % 64 == 61 || i % 64 == 62 || i % 64 == 63))) {
-            *(dest++) = 255;
-            *(dest++) = 0;
-            *(dest++) = 0;
-            shift += 1;
-        }
-        else {
-            int adjustedI = i - shift;
-            int currentY = ((((adjustedI / 20) / 6) * 5) + ((adjustedI % 20) / 4));
-            int currentX = ((((adjustedI / 20) % 6) * 4) + ((adjustedI % 20) % 4));
-
-            if ((((i - shift) % 20) / 4) % 2 == 1) {
-                currentX += 3;
-            }
-
-            int invertedX = UNIVERSE_WIDTH - 1 - currentX;
-            int invertedY = UNIVERSE_HEIGHT  - 1 - currentY;
-
-            int offset = ((invertedX * (UNIVERSE_HEIGHT)) + (UNIVERSE_HEIGHT - invertedY - 1)) * 3;
-
-            *(dest++) = universe->universe_framebuffer_opc[offset];
-            *(dest++) = universe->universe_framebuffer_opc[offset + 1];
-            *(dest++) = universe->universe_framebuffer_opc[offset + 2];
-        }
-    }
-}
-
-
-void Game::InitializeOPCClient()
-{    
-    SOC_buffer = (u32*)memalign(SOC_ALIGN, SOC_BUFFERSIZE);
-    int ret = -1;
-
-    if ((ret = socInit(SOC_buffer, SOC_BUFFERSIZE)) != 0) {
-        if(DEBUG)
-            printf("socInit: 0x%08X\n", (unsigned int)ret);
-    }
-
-    this->client = new OPCClient();
-    if(HSLG)
-        this->client->resolve("192.168.42.64", 7890);
-    else
-        this->client->resolve("192.168.1.62", 7890);
-
-    header = new OPCClient::Header();
-    int frameBytes = (UNIVERSE_WIDTH * UNIVERSE_HEIGHT) * 3;
-    frameBuffer.resize(sizeof(OPCClient::Header) + frameBytes);
-    OPCClient::Header::view(frameBuffer).init(HSLG ? 0 : 1, this->client->SET_PIXEL_COLORS, frameBytes);
 }
 
 void Game::InitializeSystem()

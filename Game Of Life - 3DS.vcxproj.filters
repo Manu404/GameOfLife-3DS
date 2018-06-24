@@ -36,15 +36,6 @@
     <ClInclude Include="source\Color.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RLEParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\inet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\opc_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -62,5 +53,10 @@
     <ClCompile Include="source\Color.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE" />
+    <None Include="Makefile" />
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

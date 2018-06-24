@@ -86,15 +86,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="build\brew_bgr.h" />
-    <ClInclude Include="RLEParser.h" />
     <ClInclude Include="source\Cell.h" />
     <ClInclude Include="source\Color.h" />
     <ClInclude Include="source\Game.h" />
     <ClInclude Include="source\Globals.h" />
-    <ClInclude Include="source\inet.h" />
-    <ClInclude Include="source\opc_client.h" />
     <ClInclude Include="source\Universe.h" />
     <ClInclude Include="source\Vector2.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE" />
+    <None Include="Makefile" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
