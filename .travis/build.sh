@@ -2,6 +2,6 @@
 
 source /etc/profile.d/devkit-env.sh
 
-cd /HelloShmup3DS
+cd /GameOfLife-3DS
 
 make
