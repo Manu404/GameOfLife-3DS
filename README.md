@@ -14,4 +14,4 @@ Get the game here: https://github.com/Manu404/GameOfLife-3DS/releases
   <a href="https://www.youtube.com/watch?v=rr_4TlechJE&feature=youtu.beE"><img src="https://img.youtube.com/vi/rr_4TlechJE/0.jpg" alt="IMAGE ALT TEXT"></a>
 </div>
 
-Brewed with love by Manu404 - https://emmanuelistace.be/ - Software under MIT License
+Software under MIT License
