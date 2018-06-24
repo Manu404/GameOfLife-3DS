@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Manu404/GameOfLife-3DS.svg?branch=master)](https://travis-ci.org/Manu404/GameOfLife-3DS)
+
 # Conway's Game of Life for Nintendo 3DS
 
 Simply download the 3dsx file and run it with your prefered hb launcher.7
