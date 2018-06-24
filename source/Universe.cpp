@@ -19,14 +19,14 @@ void Universe::GenerateCells()
     // Initialize random cells data
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y] = new Cell(new Vector2(x, y), pattern_bgr[ConvertImageCoordonatesToMemoryLocation(x, y)] != 255, universSize);
+            cells[x][y] = new Cell(new Vector2(x, y), rand() % 4 == 0, universSize);
+            //cells[x][y] = new Cell(new Vector2(x, y), pattern_bgr[ConvertImageCoordonatesToMemoryLocation(x, y)] != 255, universSize);
 }
 
 void Universe::PopulateNeighbourgs()
 {
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-        {
             for (int x2 = -1; x2 <= 1; x2++) // Iterate around the current position
                 for (int y2 = -1; y2 <= 1; y2++)
                 {
@@ -36,14 +36,14 @@ void Universe::PopulateNeighbourgs()
 
                     cells[x][y]->AddNeighbourgs(cells[neighbourPosition->X][neighbourPosition->Y]);
                 }
-        }
 }
 
 void Universe::Reset()
 {
     for (int x = 0; x < universSize->X; x++)
         for (int y = 0; y < universSize->Y; y++)
-            cells[x][y]->SetNewstate(pattern_bgr[ConvertImageCoordonatesToMemoryLocation(x, y)] != 255);
+            //cells[x][y] = new Cell(new Vector2(x, y), rand() % 2 == 0, universSize);
+            cells[x][y]->SetNewstate(rand() % 4 == 0);
 }
 
 Vector2* Universe::AdjustCoordonates(Vector2* vector)
@@ -101,7 +101,9 @@ int Universe::ConvertImageCoordonatesToMemoryLocation(int x, int y)
 
 int Universe::ConvertCoordonatesToMemoryLocation(int x, int y)
 {
-    return ((x * HEIGTH) + y) * 3;
+    return (((x * HEIGTH) + y) * 3) + 
+        (((HEIGTH - (UNIVERSE_HEIGHT * CELL_SIZE)) / 2) * 3) + 
+        (((WIDTH - (UNIVERSE_WIDTH * CELL_SIZE)) / 2) * 3 * HEIGTH);
 }
 
 int Universe::ConvertCoordonatesToOPCLocation(int x, int y)
@@ -145,7 +147,7 @@ void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int v
             // if cell is outside the viewport, continue
             if (x > (maxX) || y > (maxY) || x < (minX) || y < (minY)) continue;
 
-            if (cells[x][y]->IsAlive)
+            //if (cells[x][y]->IsAlive)
             // iterate over zoomfactor, x axis, if zoom is 2 we need to draw two cells instead of one
             for (int xi = 0; xi < (zoomFactor); xi++) {
 
@@ -162,19 +164,19 @@ void Universe::Print(Color* Foreground, Color* Background, int zoomFactor, int v
                     const int cellToDrawX = (currentCellX * zoomFactor) + xi;
                     const int cellToDrawY = (currentCellY * zoomFactor) + yi;
 
+
                     // Draw border or draw cell with correct color
-                    PrintCell(cellToDrawX, cellToDrawY, Foreground);
+                    PrintCell(cellToDrawX, cellToDrawY, cells[x][y]->IsAlive ? Foreground : Background);
 
                     // draw to opc buffer
-                    PrintCellToOPCBuffer(cellToDrawX, cellToDrawY, Foreground);
+                    PrintCellToOPCBuffer(cellToDrawX, cellToDrawY, cells[x][y]->IsAlive ? Foreground : Background);
                 }
             }
-            else
-                PrintCellToOPCBuffer(currentCellX, currentCellY, Background);
+            //else
+            //    PrintCellToOPCBuffer(currentCellX, currentCellY, Background);
 
             // if we're here, we've drawn a cell, go to next one, if end of y, go to next x
-            if (currentCellY == ((universSize->Y - 1) / zoomFactor))
-            {
+            if (currentCellY == ((universSize->Y - 1) / zoomFactor)) {
                 currentCellX += 1;
                 currentCellY = 0;
             }

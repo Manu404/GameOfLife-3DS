@@ -40,8 +40,7 @@ class Game
     void RenderTopScreen();
     void RenderBottomScreen();
     void SendOPCFrame();
-
-
+    
 public:
     Game();
     void AnimateColor();

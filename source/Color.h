@@ -26,6 +26,7 @@ class Color
     int HueShift(int h, int s);
     int max3(int a, int b, int c);
     int min3(int a, int b, int c);
+
 public:
 
     float R,G,B;
