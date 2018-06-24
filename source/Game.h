@@ -4,7 +4,6 @@
 #include <3ds/services/am.h>
 #include "Universe.h"
 #include "Color.h"
-#include "opc_client.h"
 
 #define SOC_ALIGN       0x1000
 #define SOC_BUFFERSIZE  0x100000
@@ -13,10 +12,6 @@ static u32 *SOC_buffer = NULL;
 
 class Game
 {
-    OPCClient* client;
-    std::vector<uint8_t> frameBuffer;
-    OPCClient::Header* header;
-
     Color* Foreground;
     Color* Background;
 
@@ -33,18 +28,15 @@ class Game
     void HandleZoom(u32 kDown);
     void HandleDirection(u32 kHeld);
     void HandleSpeed(u32 kDown);
-    void InitializeOPCClient();
 
     void HandleInputs();
     void FlushBuffer();
     void RenderTopScreen();
     void RenderBottomScreen();
-    void SendOPCFrame();
     
 public:
     Game();
     void AnimateColor();
     void RunMainLoop();
-    void BuildOPCFrame();
 };
 #endif

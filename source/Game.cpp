@@ -7,7 +7,6 @@
 #include "Vector2.h"
 #include "Globals.h"
 #include "Game.h"
-#include "opc_client.h"
 #include <malloc.h>
 
 Game::Game()
